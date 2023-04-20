@@ -1,8 +1,10 @@
 #Se crea una función para verificar la completitud de las variables de la base.
 import pandas as pd 
 import yfinance as yf
+import yesg
 import pypfopt
 import numpy as np 
+
 def completitud(df):
     """
     Revisa la completitud de un dataframe
@@ -27,15 +29,13 @@ def get_sustainability_data(assets):
     Args:
         assets (list): Lista de strings (nombres de los activos)
     """
-    #NOTA: Yahoo no esta scrapeando correctamente, hay que revisar. 
     sustainability = []
-    for asset in assets: 
-        dat_yf = yf.Ticker(asset)
-        if dat_yf.sustainability is None:
-            sustainability.append(100) 
-        else:
-            dat_yf = dat_yf.sustainability.to_dict()['Value']
-            sustainability.append( dat_yf.get('totalEsg', 100))
+    for asset in assets:
+        try: 
+            esg_score = float(yesg.get_esg_short('AAPL')['Total-Score'][0])
+        except: 
+            esg_score = 100 #Las que no tienen informacion se asigna la peor tasa posible. 
+        sustainability.append(esg_score)            
     return np.array(sustainability)
         
 def get_assets_info( prices,threshold, log_returns=True): 
@@ -58,8 +58,8 @@ def get_assets_info( prices,threshold, log_returns=True):
     prices_selection = prices[assets_up_thresh]
     returns = pypfopt.expected_returns.returns_from_prices(prices, log_returns=log_returns)
     assets_ind_perf=pd.DataFrame()
-    assets_ind_perf["Risk"]=returns.std()
-    assets_ind_perf["Profit"]=-returns.mean()
+    assets_ind_perf["exp_risk"]=returns.std()
+    assets_ind_perf["exp_return"]=-returns.mean()
     return returns, assets_ind_perf
 
 def get_final_assets(returns): 
@@ -75,5 +75,5 @@ def get_final_assets(returns):
     """
     profits = returns.mean().to_numpy()
     risk     = returns.cov().to_numpy()
-    #esg_data = get_sustainability_data(returns.columns)
-    return profits, risk
+    esg_data = get_sustainability_data(returns.columns)
+    return profits, risk, esg_data
