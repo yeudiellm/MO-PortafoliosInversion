@@ -4,6 +4,8 @@ import yfinance as yf
 import yesg
 import pypfopt
 import numpy as np 
+from tqdm import tqdm
+from finquant import returns
 
 def completitud(df):
     """
@@ -30,13 +32,13 @@ def get_sustainability_data(assets):
         assets (list): Lista de strings (nombres de los activos)
     """
     sustainability = []
-    for asset in assets:
+    for asset in tqdm(assets):
         try: 
-            esg_score = float(yesg.get_esg_short('AAPL')['Total-Score'][0])
+            esg_score = float(yesg.get_esg_short(asset)['Total-Score'][0])
         except: 
-            esg_score = 100 #Las que no tienen informacion se asigna la peor tasa posible. 
+            esg_score = np.nan #Las que no tienen informacion se asigna la peor tasa posible. 
         sustainability.append(esg_score)            
-    return np.array(sustainability)
+    return np.array(sustainability)/100
         
 def get_assets_info( prices,threshold, log_returns=True): 
     """
@@ -56,10 +58,14 @@ def get_assets_info( prices,threshold, log_returns=True):
     cc =completitud(prices)
     assets_up_thresh = cc[cc['completitud' ]>threshold]['variable'].values
     prices_selection = prices[assets_up_thresh]
-    returns = pypfopt.expected_returns.returns_from_prices(prices, log_returns=log_returns)
-    assets_ind_perf=pd.DataFrame()
+    returns = pypfopt.expected_returns.returns_from_prices(prices_selection, log_returns=log_returns)
+    
+    assets_ind_perf = pd.DataFrame()
     assets_ind_perf["exp_risk"]=returns.std()
     assets_ind_perf["exp_return"]=-returns.mean()
+    assets_ind_perf['esg_score'] = get_sustainability_data(prices_selection.columns)
+    assets_ind_perf = assets_ind_perf.dropna()
+    returns = returns[assets_ind_perf.index]
     return returns, assets_ind_perf
 
 def get_final_assets(returns): 
