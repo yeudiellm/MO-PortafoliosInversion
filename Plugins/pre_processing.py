@@ -5,7 +5,7 @@ import yesg
 import pypfopt
 import numpy as np 
 from tqdm import tqdm
-from finquant import returns
+from finquant import returns as fq_returns
 
 def completitud(df):
     """
@@ -40,7 +40,7 @@ def get_sustainability_data(assets):
         sustainability.append(esg_score)            
     return np.array(sustainability)/100
         
-def get_assets_info( prices,threshold, log_returns=True): 
+def get_assets_info(prices,threshold, freq=252, log_returns=True, drop_per_esg=True): 
     """
     Función que obtiene la información básica del portafolio. 
     Retornos diarios. Retorno esperado, Riesgo del activo. 
@@ -58,14 +58,19 @@ def get_assets_info( prices,threshold, log_returns=True):
     cc =completitud(prices)
     assets_up_thresh = cc[cc['completitud' ]>threshold]['variable'].values
     prices_selection = prices[assets_up_thresh]
-    returns = pypfopt.expected_returns.returns_from_prices(prices_selection, log_returns=log_returns)
-    
+    if log_returns: 
+        returns = fq_returns.daily_log_returns(prices_selection)
+    else:
+        returns = fq_returns.daily_returns(prices_selection)
+         
     assets_ind_perf = pd.DataFrame()
-    assets_ind_perf["exp_risk"]=returns.std()
-    assets_ind_perf["exp_return"]=-returns.mean()
+    assets_ind_perf["exp_risk"]=returns.std()*np.sqrt(freq)
+    assets_ind_perf["exp_return"]=-returns.mean()*freq
     assets_ind_perf['esg_score'] = get_sustainability_data(prices_selection.columns)
-    assets_ind_perf = assets_ind_perf.dropna()
-    returns = returns[assets_ind_perf.index]
+    
+    if drop_per_esg:
+        assets_ind_perf = assets_ind_perf.dropna()
+        returns = returns[assets_ind_perf.index]
     return returns, assets_ind_perf
 
 def get_final_assets(returns): 

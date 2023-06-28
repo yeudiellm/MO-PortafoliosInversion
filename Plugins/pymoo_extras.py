@@ -18,7 +18,6 @@ class Portfolio_Problem(ElementwiseProblem):
                          **kwargs)
 
     def _evaluate(self, x, out, *args, **kwargs):
-        global portfolio_weights
         #NORMALIZAR X antes de empezar
         s = np.sum(x)
         x = x/s
@@ -26,8 +25,10 @@ class Portfolio_Problem(ElementwiseProblem):
         exp_return = self.profits@x
         exp_risk    = np.sqrt(x.T@self.risk@x)
         exp_esg     = self.esg@x
-        out["F"] = [exp_risk, -exp_return]
+        sharpe = exp_return / exp_risk
+        out['F'] = [exp_risk, -exp_return]
         out['ESG'] = exp_esg
+        out['Sharpe'] = sharpe
         
 class Portfolio_Repair(Repair):
     def _do(self, problem, X, **kwargs):
@@ -41,8 +42,8 @@ def get_weights_with_pymoo(problem,algorithm,termination):
                    save_history=True, 
                    verbose=False)
     all_pop = Population()
-    for algorithm in res.history:
-        all_pop = Population.merge(all_pop, algorithm.off)
+    for algo in res.history:
+        all_pop = Population.merge(all_pop, algo.off)
     X = all_pop.get('X')
     F = all_pop.get('F')
     ESG = all_pop.get('ESG')
@@ -56,3 +57,9 @@ def eval_weights(problem, weights):
     ESG = Xpop.get('ESG')
     pdF = pd.DataFrame(F, columns=['exp_risk', 'exp_return'])
     return pdF, ESG
+
+def annualised_portfolio_quantities(pdf, freq=252):
+    pdf2 = pdf.copy()
+    pdf2['exp_risk']= pdf2['exp_risk']*np.sqrt(freq)
+    pdf2['exp_return']=pdf2['exp_return']*freq
+    return pdf2
