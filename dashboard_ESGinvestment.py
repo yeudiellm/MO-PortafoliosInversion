@@ -63,7 +63,6 @@ def get_assets(bursatil_index, assets_selection):
         returns= pd.read_csv( 'data/'+str(bursatil_dict[bursatil_index])+'_returns.csv', index_col=0)
         assets_info=pd.read_csv( 'data/'+str(bursatil_dict[bursatil_index])+'_assets_info.csv', index_col=0)
         best_assets=pd.read_csv( 'data/'+str(bursatil_dict[bursatil_index])+'_best_assets.csv', index_col=0)
-    print(best_assets)
     return returns, assets_info, best_assets
 
 #######################Haciendo Muestreo###############################################
