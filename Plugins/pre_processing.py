@@ -2,7 +2,6 @@
 import pandas as pd 
 import yfinance as yf
 import yesg
-import pypfopt
 import numpy as np 
 from tqdm import tqdm
 from finquant import returns as fq_returns
@@ -73,7 +72,7 @@ def get_assets_info(prices,threshold, freq=252, log_returns=True, drop_per_esg=T
         returns = returns[assets_ind_perf.index]
     return returns, assets_ind_perf
 
-def get_final_assets(returns): 
+def get_final_assets(returns, assets_ind_perf): 
     """
     Obtiene los promedios y la matriz de covarianzas 
     de las acciones a considerar para el portafolio.
@@ -86,5 +85,5 @@ def get_final_assets(returns):
     """
     profits = returns.mean().to_numpy()
     risk     = returns.cov().to_numpy()
-    esg_data = get_sustainability_data(returns.columns)
+    esg_data = assets_ind_perf['esg_score'].to_numpy()
     return profits, risk, esg_data
