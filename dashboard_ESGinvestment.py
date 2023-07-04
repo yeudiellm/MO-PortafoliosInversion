@@ -69,7 +69,7 @@ def get_assets(bursatil_index, assets_selection):
 @st.cache_data
 def generating_sampling(algorithm_selection, eps): 
     if algorithm_selection=='Das-Dennis': 
-        X = get_reference_directions("das-dennis", len(PROFITS), n_partitions=10)
+        X = get_reference_directions("das-dennis", len(portfolio_problem.profits), n_partitions=10)
         F, ESG = pymoo_extras.eval_weights(portfolio_problem, X)
     elif algorithm_selection=='NSGA-II': 
         X, F, ESG =pymoo_extras.get_weights_with_pymoo(portfolio_problem, nsgaii, termination)
