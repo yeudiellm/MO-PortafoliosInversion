@@ -148,8 +148,8 @@ with placeholder.container():
     
  
     st.markdown("### Histogramas de los objetivos")
-    fig_projection = my_plotting.plot_histograms(FA_best, FA_3D_best)
-    st.pyplot(fig_projection)
+    fig_histograms = my_plotting.plot_histograms(FA_best, FA_3D_best)
+    st.pyplot(fig_histograms)
     
     st.markdown("### Proporción promedio de los activos")
     fig_proportions = my_plotting.plot_proportions(FA_best, FA_3D_best, X,best_assets, assets_info)
