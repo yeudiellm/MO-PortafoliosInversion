@@ -1,6 +1,7 @@
 # MO-PortafoliosInversion
-Proyecto de Aplicación de Técnicas de Optimización MultiObjetivo a Portafolios de Inversión
+# A Hierarchical Approach to a Tri-objective Portfolio Optimization Problem Considering an ESG Index
 
+## Overview 
 
 BASES DE DATOS  
 * Base de datos  histórica SP500  
@@ -19,15 +20,11 @@ ALGORITMOS DE ARCHIVOS
 * Algoritmo PQ-eps-delta 
 
 ALGORITMOS DE OPTIMIZACIÓN 2 objetivos  
-* Implementación de PBIL (falta optimizarla para conseguir mejores resultados) 
+* SMS-EMOA
 * NSGA-II 
-* NSGA-III 
-* MOEA 
 
-## Falta por hacer (o hay que mejorarlo) 
+PROBLEMAS 
+* Directed Search no esta funcionando 
+* Faltan resultaods
 
-* Obtener el archivo externo (ya se obtiene pero falta hacerlo de forma eficiente) 
-* Obtener todos los resultados 
-* Muestre Lipchitz 
-* Requisitos para cerrar el servicio social 
-* Escribir reporte 
+

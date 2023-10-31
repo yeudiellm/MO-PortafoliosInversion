@@ -22,13 +22,15 @@
 from __future__ import print_function
 
 import logging
-import traceback
 import time as _time
+import traceback
+
 import multitasking as _multitasking
 import pandas as _pd
 
 from . import Ticker, utils
 from . import shared
+
 
 @utils.log_indent_decorator
 def download(tickers, start=None, end=None, actions=False, threads=True, ignore_tz=None,
@@ -47,7 +49,7 @@ def download(tickers, start=None, end=None, actions=False, threads=True, ignore_
             Intraday data cannot extend last 60 days
         start: str
             Download start date string (YYYY-MM-DD) or _datetime, inclusive.
-            Default is 1900-01-01
+            Default is 99 years ago
             E.g. for start="2020-01-01", the first data point will be on "2020-01-01"
         end: str
             Download end date string (YYYY-MM-DD) or _datetime, exclusive.
@@ -181,7 +183,7 @@ def download(tickers, start=None, end=None, actions=False, threads=True, ignore_
         for ticker in shared._ERRORS:
             err = shared._ERRORS[ticker]
             err = err.replace(f'{ticker}', '%ticker%')
-            if not err in errors:
+            if err not in errors:
                 errors[err] = [ticker]
             else:
                 errors[err].append(ticker)
@@ -193,7 +195,7 @@ def download(tickers, start=None, end=None, actions=False, threads=True, ignore_
         for ticker in shared._TRACEBACKS:
             tb = shared._TRACEBACKS[ticker]
             tb = tb.replace(f'{ticker}', '%ticker%')
-            if not tb in tbs:
+            if tb not in tbs:
                 tbs[tb] = [ticker]
             else:
                 tbs[tb].append(ticker)
@@ -207,7 +209,7 @@ def download(tickers, start=None, end=None, actions=False, threads=True, ignore_
 
     if len(tickers) == 1:
         ticker = tickers[0]
-        return shared._DFS[shared._ISINS.get(ticker, ticker)]
+        return shared._DFS[ticker]
 
     try:
         data = _pd.concat(shared._DFS.values(), axis=1, sort=True,

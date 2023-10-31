@@ -19,8 +19,8 @@ class Portfolio_Problem(ElementwiseProblem):
 
     def _evaluate(self, x, out, *args, **kwargs):
         #NORMALIZAR X antes de empezar
-        s = np.sum(x)
-        x = x/s
+        #s = np.sum(x)
+        #x = x/s
         #Función de evaluacion
         exp_return = self.profits@x
         exp_risk    = np.sqrt(x.T@self.risk@x)

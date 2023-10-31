@@ -1,4 +1,3 @@
-#Se crea una función para verificar la completitud de las variables de la base.
 import pandas as pd 
 import yfinance as yf
 import yesg
@@ -6,11 +5,12 @@ import numpy as np
 from tqdm import tqdm
 from finquant import returns as fq_returns
 
+#We only considered historical data which a threshold of complete data. 
 def completitud(df):
     """
-    Revisa la completitud de un dataframe
+    Check the fullness of data in a dataframe
     Args:
-        df (pandas.DataFrame): Dataframe a examinar. 
+        df (pandas.DataFrame): Dataframe to analyze. 
     Returns:
         comple: DataFrame con la completitud por columna del dataset original.
     """
@@ -24,45 +24,47 @@ def completitud(df):
 
 def get_sustainability_data(assets): 
     """
-    Función para obtener la información medio-ambiental. 
-    Si no se reporta la información medio-ambiental se le da la peor nota. 
-
+    Function to obtain sustainability data. 
+    If we don't have information we return np.nan for that stock. 
     Args:
-        assets (list): Lista de strings (nombres de los activos)
+        assets (list): List of strings with stocks symbols (Tickers)
     """
     sustainability = []
-    for asset in tqdm(assets):
+    for asset in assets:
         try: 
-            esg_score = float(yesg.get_esg_short(asset)['Total-Score'][0])
-        except: 
-            esg_score = np.nan #Las que no tienen informacion se asigna la peor tasa posible. 
+            esg_score = yesg.get_historic_esg(asset).tail(1)['Total-Score'][0] 
+        except Exception as e: 
+            esg_score = np.nan  
         sustainability.append(esg_score)            
     return np.array(sustainability)/100
         
 def get_assets_info(prices,threshold, freq=252, log_returns=True, drop_per_esg=True): 
     """
-    Función que obtiene la información básica del portafolio. 
+    Obtaining basic information about stocks components.
+    Dailiy returns, risk, esg information.
     Retornos diarios. Retorno esperado, Riesgo del activo. 
-    Matriz de covarianzas.
-
     Args:
-        prices (pandas.DataFrame): Dataset historico del precio de los activos.
-        threshold (float): Number in [0,1]. Cantidad de observaciones mínimas para 
-                           considerar el activo. 
+        prices (pd.DataFrame): Historical prices of the stocks.
+        threshold (float): Number in [0,1]. Percentage of NaN accepted values 
         log_returns (bool, optional): Si los retornos son logaritmicos.
-
+        freq (int): Year of active trading
+        log_returns (bool): If the returns are logarithmic or not
+        drop_per_esg (bool): Delete stocks with no esg score information 
     Returns:
-        _type_: _description_
+        returns (pd.DataFrame): Daily returns per stock.
+        assets_ind_perf(pd.DataFrame) Mean-Return, Risk, Esg score per asset.
     """
     cc =completitud(prices)
     assets_up_thresh = cc[cc['completitud' ]>threshold]['variable'].values
     prices_selection = prices[assets_up_thresh]
+    prices_selection = prices_selection.dropna(how='all')
     if log_returns: 
         returns = fq_returns.daily_log_returns(prices_selection)
     else:
         returns = fq_returns.daily_returns(prices_selection)
          
     assets_ind_perf = pd.DataFrame()
+    #Annualised portfolio quantities
     assets_ind_perf["exp_risk"]=returns.std()*np.sqrt(freq)
     assets_ind_perf["exp_return"]=-returns.mean()*freq
     assets_ind_perf['esg_score'] = get_sustainability_data(prices_selection.columns)
@@ -74,14 +76,15 @@ def get_assets_info(prices,threshold, freq=252, log_returns=True, drop_per_esg=T
 
 def get_final_assets(returns, assets_ind_perf): 
     """
-    Obtiene los promedios y la matriz de covarianzas 
-    de las acciones a considerar para el portafolio.
-
-    Args:
-        returns (pandas.DataFrame): _description_
-
+    Obtaining the objectives needed to the problem. 
+    Mean Return, Covariance, ESG Score 
+    Args: 
+        returns (pd.DataFrame): Daily returns of assets. 
+        assets_ind_perf (pd.DataFrame): Previos information computed about assets (esg scores)
     Returns:
-        profits, risk (np.ndarra): ndarray con los promedios y matrices de covarianza.
+        profits (np.array): Profits of each asset.
+        cov  (np.array): Covariance of assets. 
+        esg_data: ESG score for each profit. 
     """
     profits = returns.mean().to_numpy()
     risk     = returns.cov().to_numpy()
