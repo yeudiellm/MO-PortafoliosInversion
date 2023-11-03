@@ -6,7 +6,8 @@ import pandas as pd
 import numpy as np 
 sns.set_theme()
 
-def plot_assets(assets_info, best_assets): 
+def plot_assets(assets_info, best_assets, figsize): 
+    fig = plt.figure(figsize=figsize)
     assets_plot = assets_info.copy()
     assets_plot['Stocks'] = 'Dominated'
     assets_plot['Size']    = 4000
@@ -22,6 +23,7 @@ def plot_assets(assets_info, best_assets):
     plt.xlabel("Expected Annual Risk")
     plt.ylabel("Expected Annual Return")
     plt.show()
+    return fig
     
 def plotting_samples(ef_R, frames, labels,colors, figsize):
     fig = plt.figure(figsize=figsize)
@@ -33,6 +35,21 @@ def plotting_samples(ef_R, frames, labels,colors, figsize):
     plt.ylabel("Expected Annual Return")
     plt.legend()
     plt.show()
+    return fig
+
+def plotting_projection(FA_3D_best, ef_R, figsize, colormap, vmin, vmax): 
+    fig = plt.figure(figsize=figsize)
+    plt.plot(ef_R[:,0], ef_R[:, 1], linestyle='-', color='black', lw=1, label='Markowitz')
+    points =plt.scatter( FA_3D_best['exp_risk'], 
+                        -FA_3D_best['exp_return'], 
+                        c=FA_3D_best['exp_esg'], cmap=colormap, vmin=vmin, vmax=vmax)
+    fig.colorbar(points, label='ESG risk score')
+    plt.xlabel("Expected Annual Risk")
+    plt.ylabel("Expected Annual Return")
+    plt.legend()
+    plt.show()
+    return fig   
+    
     
 def plot_assets_plotly(assets_info, best_assets, with_labels=True): 
     assets_plot = assets_info.copy()
@@ -102,7 +119,7 @@ def plotting_projection_plotly(FA_3D_best, ef_R):
                      color_continuous_scale='haline',
                     labels = {'exp_risk':'Expected Annual Risk', 
                               'exp_return': 'Expected Annual Return', 
-                              'exp_esg': 'ESG score'})
+                              'exp_esg': 'ESG risk score'})
     fig.add_trace(go.Scatter(x=ef_R[:,0], y=ef_R[:,1],
                         mode='lines',
                         name='Markowitz', 
