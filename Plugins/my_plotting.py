@@ -5,7 +5,8 @@ import plotly.graph_objects as go
 import pandas as pd 
 import numpy as np 
 sns.set_theme()
-
+#########################################################################################################################################
+#MATPLOTLIB GENERIC
 def plot_assets(assets_info, best_assets, figsize): 
     fig = plt.figure(figsize=figsize)
     assets_plot = assets_info.copy()
@@ -24,33 +25,37 @@ def plot_assets(assets_info, best_assets, figsize):
     plt.ylabel("Expected Annual Return")
     plt.show()
     return fig
+def plot_assets_with_ax(assets_info, best_assets, ax): 
+    ax.scatter( assets_info['exp_risk'], -assets_info['exp_return'], label=r'$Q$', color='cornflowerblue', s=2)
+    ax.scatter( best_assets['exp_risk'], -best_assets['exp_return'], label=r'$P_{Q}$', color='red', s=8)
+    ax.legend(title='Assets', loc='lower right', fontsize='9')
+    ax.set_xlabel("Expected Annual Risk", fontsize='9')
+    ax.set_ylabel("Expected Annual Return", fontsize='9')
+    return ax
     
-def plotting_samples(ef_R, frames, labels,colors, figsize):
-    fig = plt.figure(figsize=figsize)
-    plt.plot(ef_R[:,0], ef_R[:, 1], linestyle='-', color='black', lw=1, label='Markowitz') 
-    
+def plotting_samples_with_ax(ef_R, frames, labels,colors, ax):
+    ax.plot(ef_R[:,0], ef_R[:, 1], linestyle='dashed', color='black', lw=2, label='Markowitz') 
     for i,f in enumerate(frames): 
-        plt.scatter( f['exp_risk'], -f['exp_return'], label=labels[i], color=colors[i])
-    plt.xlabel("Expected Annual Risk")
-    plt.ylabel("Expected Annual Return")
-    plt.legend()
-    plt.show()
-    return fig
+        ax.scatter( f['exp_risk'], -f['exp_return'], label=labels[i], color=colors[i], s=2)
+    ax.set_xlabel("Expected Annual Risk", fontsize='9')
+    ax.set_ylabel("Expected Annual Return", fontsize='9')
+    ax.legend(loc='lower right')
+    return ax
 
-def plotting_projection(FA_3D_best, ef_R, figsize, colormap, vmin, vmax): 
-    fig = plt.figure(figsize=figsize)
-    plt.plot(ef_R[:,0], ef_R[:, 1], linestyle='-', color='black', lw=1, label='Markowitz')
-    points =plt.scatter( FA_3D_best['exp_risk'], 
+def plotting_projection_with_ax(FA_3D_best, ef_R, colormap, vmin, vmax, ax): 
+    ax.plot(ef_R[:,0], ef_R[:, 1], linestyle='dashed', color='black', lw=2, label='Markowitz')
+    points =ax.scatter( FA_3D_best['exp_risk'], 
                         -FA_3D_best['exp_return'], 
+                        s=2,
                         c=FA_3D_best['exp_esg'], cmap=colormap, vmin=vmin, vmax=vmax)
-    fig.colorbar(points, label='ESG risk score')
-    plt.xlabel("Expected Annual Risk")
-    plt.ylabel("Expected Annual Return")
-    plt.legend()
-    plt.show()
-    return fig   
+    plt.colorbar(points,ax=ax, label='ESG risk score')
+    ax.set_xlabel("Expected Annual Risk", fontsize='9')
+    ax.set_ylabel("Expected Annual Return", fontsize='9')
+    ax.legend(loc='lower right')
+    return ax 
     
-    
+#########################################################################################################################################
+#PLOTLY FRAMES     
 def plot_assets_plotly(assets_info, best_assets, with_labels=True): 
     assets_plot = assets_info.copy()
     assets_plot['Stocks'] = 'Dominated'
@@ -128,6 +133,8 @@ def plotting_projection_plotly(FA_3D_best, ef_R):
     fig.update_layout(coloraxis_colorbar_y=0.45)
     return fig 
 
+#########################################################################################################################################
+#HISTOGRAMS  
 def plot_histograms(FA_best, FA_3D_best): 
     fig, ax = plt.subplots(2,3, figsize= (12,4))
     ax[0][0].set_ylabel('2 objs portfolios')

@@ -23,7 +23,7 @@ class Evaluator_Solutions():
         GDplus_ind = GDPlus(self.ef_R)
         IGDplus_ind = IGDPlus(self.ef_R) 
         HV_ind  =HV(ref_point=np.array([1.1]*n_obj))
-        self.inds_names = ['GD', 'IGD', 'GDplus', 'IGDplus', 'HV']
+        self.inds_names = ['GD', 'IGD', 'GDplus', 'IGDplus', 'HV', '|PQeps|']
         self.inds  = [GD_ind, IGD_ind,GDplus_ind,IGDplus_ind, HV_ind]
         
     def get_max_min(self): 
@@ -56,6 +56,8 @@ class Evaluator_Solutions():
                 if name_ind=='HV':
                     FA_eps_norm = self.minmaxScaler(FA_eps_numpy, general_max, general_min, 1, 0)
                     values_ind[j, i] = ind(FA_eps_norm)
+                elif name_ind=='|PQeps|':
+                    values_ind[j, i] = len(FA_eps_numpy)
                 else: 
                     values_ind[j,i] = ind(FA_eps_numpy)
         return values_ind
